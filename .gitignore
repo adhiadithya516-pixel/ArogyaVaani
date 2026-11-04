@@ -1,0 +1,20 @@
+# Dependencies
+server/node_modules/
+
+# Environment secrets
+server/.env
+server/serviceAccountKey.json
+
+# Flutter / Dart generated files
+client/.dart_tool/
+client/build/
+client/.flutter-plugins
+client/.flutter-plugins-dependencies
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
