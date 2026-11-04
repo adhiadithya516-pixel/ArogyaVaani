@@ -1,33 +1,24 @@
-const admin = require("firebase-admin");
-
-let firebaseApp;
+const { initializeApp, cert, getApps } = require("firebase-admin/app");
 
 function initializeFirebaseAdmin() {
-  if (firebaseApp) {
-    return firebaseApp;
+  if (getApps().length > 0) {
+    return getApps()[0];
   }
 
-  if (!process.env.FIREBASE_PROJECT_ID) {
-    throw new Error("FIREBASE_PROJECT_ID is missing from the environment");
+  const { FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY } =
+    process.env;
+
+  if (!FIREBASE_PROJECT_ID || !FIREBASE_CLIENT_EMAIL || !FIREBASE_PRIVATE_KEY) {
+    throw new Error("Firebase Admin environment variables are missing.");
   }
 
-  if (!process.env.FIREBASE_CLIENT_EMAIL) {
-    throw new Error("FIREBASE_CLIENT_EMAIL is missing from the environment");
-  }
-
-  if (!process.env.FIREBASE_PRIVATE_KEY) {
-    throw new Error("FIREBASE_PRIVATE_KEY is missing from the environment");
-  }
-
-  firebaseApp = admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+  return initializeApp({
+    credential: cert({
+      projectId: FIREBASE_PROJECT_ID,
+      clientEmail: FIREBASE_CLIENT_EMAIL,
+      privateKey: FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
     }),
   });
-
-  return firebaseApp;
 }
 
 module.exports = { initializeFirebaseAdmin };
