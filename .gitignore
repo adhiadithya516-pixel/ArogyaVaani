@@ -4,6 +4,7 @@ server/node_modules/
 # Environment secrets
 server/.env
 server/serviceAccountKey.json
+/server/serviceAccountKey.json.json
 
 # Flutter / Dart generated files
 client/.dart_tool/
