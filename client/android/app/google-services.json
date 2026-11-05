@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "357785659663",
+    "project_id": "arogyavaani-3a541",
+    "storage_bucket": "arogyavaani-3a541.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:357785659663:android:07295cf0364c57051db67a",
+        "android_client_info": {
+          "package_name": "com.arogyavani.arogyavani"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBt9qHDMTjp0579R6bWAtgCtkJmqdzwLk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
