@@ -1,40 +1,100 @@
 const { adminAuth, adminDb } = require("../services/firebaseAdmin");
 
+// REGISTER USER
 const register = async (req, res) => {
   const { name, email, password } = req.body;
 
-  if (!name || !email || !password) {
+  // Validate required fields
+  if (
+    typeof name !== "string" ||
+    typeof email !== "string" ||
+    typeof password !== "string" ||
+    !name.trim() ||
+    !email.trim() ||
+    !password
+  ) {
     return res.status(400).json({
       success: false,
       error: {
         code: "VALIDATION_ERROR",
-        message: "Name, email, and password are required.",
+        message: "Valid name, email, and password are required.",
       },
     });
   }
 
+  const cleanName = name.trim();
+  const cleanEmail = email.trim();
+
+  // Validate email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailRegex.test(cleanEmail)) {
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: "INVALID_EMAIL",
+        message: "Please provide a valid email address.",
+      },
+    });
+  }
+
+  // Validate password
+  if (password.length < 8) {
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: "WEAK_PASSWORD",
+        message: "Password must contain at least 8 characters.",
+      },
+    });
+  }
+
+  let userRecord;
+
   try {
-    const userRecord = await adminAuth.createUser({
-      displayName: name.trim(),
-      email: email.trim(),
+    // Create Firebase Authentication account
+    userRecord = await adminAuth.createUser({
+      displayName: cleanName,
+      email: cleanEmail,
       password,
     });
 
+    const timestamp = new Date().toISOString();
+
+    // Prepare Firestore profile
     const profile = {
       uid: userRecord.uid,
-      name: name.trim(),
-      email: email.trim(),
+      name: cleanName,
+      email: cleanEmail,
       emergencyContacts: [],
-      createdAt: new Date().toISOString(),
+      createdAt: timestamp,
+      updatedAt: timestamp,
     };
 
-    await adminDb.collection("users").doc(userRecord.uid).set(profile);
+    // Save profile in Firestore
+    await adminDb
+      .collection("users")
+      .doc(userRecord.uid)
+      .set(profile);
 
     return res.status(201).json({
       success: true,
       data: { profile },
     });
+
   } catch (error) {
+    // Remove Auth account if Firestore profile creation fails
+    if (userRecord) {
+      try {
+        await adminAuth.deleteUser(userRecord.uid);
+      } catch (cleanupError) {
+        console.error(
+          "Registration cleanup error:",
+          cleanupError.message
+        );
+      }
+    }
+
     if (error.code === "auth/email-already-exists") {
       return res.status(409).json({
         success: false,
@@ -57,9 +117,13 @@ const register = async (req, res) => {
   }
 };
 
+// GET USER PROFILE
 const getProfile = async (req, res) => {
   try {
-    const userDoc = await adminDb.collection("users").doc(req.user.uid).get();
+    const userDoc = await adminDb
+      .collection("users")
+      .doc(req.user.uid)
+      .get();
 
     if (!userDoc.exists) {
       return res.status(404).json({
@@ -75,6 +139,7 @@ const getProfile = async (req, res) => {
       success: true,
       data: { profile: userDoc.data() },
     });
+
   } catch (error) {
     console.error("Get profile error:", error.message);
 
@@ -87,6 +152,8 @@ const getProfile = async (req, res) => {
     });
   }
 };
+
+// UPDATE USER PROFILE
 const updateProfile = async (req, res) => {
   const { name, emergencyContacts } = req.body;
 
@@ -133,8 +200,13 @@ const updateProfile = async (req, res) => {
     updates.emergencyContacts = emergencyContacts;
   }
 
+  updates.updatedAt = new Date().toISOString();
+
   try {
-    const userRef = adminDb.collection("users").doc(req.user.uid);
+    const userRef = adminDb
+      .collection("users")
+      .doc(req.user.uid);
+
     const userDoc = await userRef.get();
 
     if (!userDoc.exists) {
@@ -148,12 +220,14 @@ const updateProfile = async (req, res) => {
     }
 
     await userRef.update(updates);
+
     const updatedDoc = await userRef.get();
 
     return res.json({
       success: true,
       data: { profile: updatedDoc.data() },
     });
+
   } catch (error) {
     console.error("Update profile error:", error.message);
 
@@ -167,4 +241,8 @@ const updateProfile = async (req, res) => {
   }
 };
 
-module.exports = { register, getProfile, updateProfile };
+module.exports = {
+  register,
+  getProfile,
+  updateProfile,
+};
