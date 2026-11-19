@@ -1,0 +1,15 @@
+{
+  "@@locale": "en",
+  "appTitle": "ArogyaVani",
+  "welcomeTitle": "Welcome to ArogyaVani",
+  "welcomeSubtitle": "Your voice-first health companion in English and Kannada",
+  "getStarted": "Get Started",
+  "homeTab": "Home",
+  "reportsTab": "Reports",
+  "medicineTab": "Medicine",
+  "symptomsTab": "Symptoms",
+  "profileTab": "Profile",
+  "tapToSpeak": "Tap microphone to speak",
+  "listening": "Listening...",
+  "emergencyCall": "Emergency 108"
+}
